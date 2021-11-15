@@ -1,0 +1,48 @@
+.stage {
+	display: flex;
+	flex-wrap: wrap;
+	width: 700px;
+	margin: 5rem auto;
+
+	.flex-row {
+		display: flex;
+		flex-wrap: wrap;
+		width: 100%;
+	}
+
+	.col {
+		height: 55px;
+		flex: 1;
+		margin: 0.15rem;
+
+		background: #EDF2F7;
+
+		&.filled1 {
+			background: #38B2AC;
+		}
+
+		&.filled2 {
+			background: #4299E1;
+		}
+
+		&.filled3 {
+			background: #ED8936;
+		}
+
+		&.filled4 {
+			background: #48BB78;
+		}
+
+		&.filled5 {
+			background: #9F7AEA;
+		}
+
+		&.filled6 {
+			background: #F56565;
+		}
+
+		&.filled7 {
+			background: #ECC94B;
+		}
+	}
+}
