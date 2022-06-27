@@ -1,7 +1,7 @@
 import { Component, HostListener, OnInit, ɵmarkDirty as markDirty } from '@angular/core';
 
 import { Stage } from './stage';
-import { TetrominoMove } from './tetromino';
+import { TetrominoMove } from './models';
 
 
 @Component({

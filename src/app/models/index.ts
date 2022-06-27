@@ -5,21 +5,21 @@ export enum TetrominoMove {
 	right
 }
 
-export interface ITetromino {
+export interface Tetromino {
 	shape: number[][];
 	topLeft: { row: number; col: number; }
 }
 
 const defaultCoords = { row: 0, col: 4 };
 
-export class ShapeI implements ITetromino {
+export class ShapeI implements Tetromino {
 	shape = [
 		[ 1, 1, 1, 1 ]
 	];
 	topLeft = Object.assign({}, defaultCoords);
 };
 
-export class ShapeJ implements ITetromino {
+export class ShapeJ implements Tetromino {
 	shape = [
 		[ 2, 0, 0 ],
 		[ 2, 2, 2 ]
@@ -27,7 +27,7 @@ export class ShapeJ implements ITetromino {
 	topLeft = Object.assign({}, defaultCoords);
 };
 
-export class ShapeL implements ITetromino {
+export class ShapeL implements Tetromino {
 	shape = [
 		[ 0, 0, 3 ],
 		[ 3, 3, 3 ]
@@ -35,7 +35,7 @@ export class ShapeL implements ITetromino {
 	topLeft = Object.assign({}, defaultCoords);
 };
 
-export class ShapeO implements ITetromino {
+export class ShapeO implements Tetromino {
 	shape = [
 		[ 7, 7 ],
 		[ 7, 7 ]
@@ -43,7 +43,7 @@ export class ShapeO implements ITetromino {
 	topLeft = Object.assign({}, defaultCoords);
 };
 
-export class ShapeS implements ITetromino {
+export class ShapeS implements Tetromino {
 	shape = [
 		[ 0, 4, 4 ],
 		[ 4, 4, 0 ]
@@ -51,7 +51,7 @@ export class ShapeS implements ITetromino {
 	topLeft = Object.assign({}, defaultCoords);
 };
 
-export class ShapeT implements ITetromino {
+export class ShapeT implements Tetromino {
 	shape = [
 		[ 0, 5, 0 ],
 		[ 5, 5, 5 ]
@@ -59,7 +59,7 @@ export class ShapeT implements ITetromino {
 	topLeft = Object.assign({}, defaultCoords);
 };
 
-export class ShapeZ implements ITetromino {
+export class ShapeZ implements Tetromino {
 	shape = [
 		[ 6, 6, 0 ],
 		[ 0, 6, 6 ]
