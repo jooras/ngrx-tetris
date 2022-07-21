@@ -1,10 +1,8 @@
 import { Injectable } from "@angular/core";
 
 import { allTetrominos, Tetromino, TetrominoMove } from "./models";
-import { assign, iterateOverTetromino, mergeToMatrix, wouldCollideWithMatrix, wouldCollideWithScreen } from './helpers';
+import { assign, mergeToMatrix, wouldCollideWithMatrix, wouldCollideWithScreen } from './helpers';
 
-
- 
 
 @Injectable()
 export class Stage {

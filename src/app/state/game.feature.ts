@@ -1,34 +1,40 @@
-import { createFeature, createReducer, on } from '@ngrx/store';
-import { Tetromino } from '../models';
+import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
+import { allTetrominos, Tetromino } from '../models';
 import { fromGame } from './game.actions';
+import { assign, mergeToMatrix, wouldCollideWithMatrix, wouldCollideWithScreen } from '../helpers';
+
+
+const emptyMatrix = [
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+];
 
 export interface GameState {
 	landed: number[][];
 	screen: number[][];
 	tetromino: Tetromino;
+	ended: boolean;
 }
 
 const initialState: GameState = {
-	landed: [
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-	],
-	screen: null,
-	tetromino: null
+	landed: emptyMatrix,
+	screen: emptyMatrix,
+	tetromino: null,
+	ended: false
 };
 
 export const gameFeature = createFeature({
@@ -36,12 +42,50 @@ export const gameFeature = createFeature({
 	reducer: createReducer(
 		initialState,
 
-		// on(fromGame.mergeToScreen, (state, action) => {
-		//
-		// })
+		on(fromGame.refreshScreen, (state, action) =>
+			assign(state, { screen: mergeToMatrix(state.landed, state.tetromino) })
+		),
+
+		on(fromGame.tetrominoSpawned, (state, { tetromino }) =>
+			assign(state, { tetromino })
+		),
+
+		on(fromGame.tetrominoMoved, (state, { tetromino }) =>
+			assign(state, { tetromino })
+		),
+
+		on(fromGame.landTetromino, (state, action) =>
+			assign(state, {
+				tetromino: null,
+				landed: mergeToMatrix(state.landed, state.tetromino)
+			})
+		),
+
+		on(fromGame.gameOver, (state, action) =>
+			assign(state, { ended: true })
+		)
 	)
 });
 
-const { selectLanded } = gameFeature;
+const { selectLanded, selectScreen, selectTetromino, selectEnded } = gameFeature;
 
-export const gameQueries = { selectLanded };
+const selectTetrominoExists = createSelector(
+	selectTetromino,
+	tetromino => !!tetromino
+);
+
+const selectTetrominoHasLanded = createSelector(
+	selectLanded,
+	selectTetromino,
+	(landed, tetromino) => wouldCollideWithScreen(landed, tetromino)
+		|| wouldCollideWithMatrix(landed, tetromino)
+);
+
+export const gameQueries = {
+	selectLanded,
+	selectScreen,
+	selectTetromino,
+	selectEnded,
+	selectTetrominoExists,
+	selectTetrominoHasLanded
+};
