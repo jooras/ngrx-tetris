@@ -28,13 +28,15 @@ export interface GameState {
 	screen: number[][];
 	tetromino: Tetromino;
 	ended: boolean;
+	score: number;
 }
 
 const initialState: GameState = {
 	landed: emptyMatrix,
 	screen: emptyMatrix,
 	tetromino: null,
-	ended: false
+	ended: false,
+	score: 0
 };
 
 export const gameFeature = createFeature({
@@ -67,11 +69,15 @@ export const gameFeature = createFeature({
 
 		on(fromGame.gameOver, (state, action) =>
 			assign(state, { ended: true })
+		),
+
+		on(fromGame.addScore, (state, { score }) =>
+			assign(state, { score: state.score + score })
 		)
 	)
 });
 
-const { selectLanded, selectScreen, selectTetromino, selectEnded } = gameFeature;
+const { selectLanded, selectScreen, selectTetromino, selectEnded, selectScore } = gameFeature;
 
 const selectTetrominoExists = createSelector(
 	selectTetromino,
@@ -96,6 +102,7 @@ export const gameQueries = {
 	selectScreen,
 	selectTetromino,
 	selectEnded,
+	selectScore,
 	selectTetrominoExists,
 	selectTetrominoHasLanded,
 	selectCompletedRows

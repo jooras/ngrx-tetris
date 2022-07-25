@@ -10,6 +10,9 @@ import { fromGame } from './state/game.actions';
 @Component({
 	selector: 'app-stage',
 	template: `
+		<div class="score">
+			<h3>Score: <span>{{ score$ | async }}</span></h3>
+		</div>
 		<div class="stage">
 			<div class="flex-row" *ngFor="let cols of screen$ | async">
 				<div class="col {{ col ? 'filled' + col : '' }}" *ngFor="let col of cols">
@@ -42,6 +45,7 @@ export class StageComponent implements OnInit {
 		}
 	}
 
+	score$: Observable<number>;
 	screen$: Observable<number[][]>;
 
 	constructor(
@@ -57,6 +61,7 @@ export class StageComponent implements OnInit {
 	}
 
 	private subscribeToState() {
+		this.score$ = this.store.select(gameQueries.selectScore);
 		this.screen$ = this.store.select(gameQueries.selectScreen)
 			.pipe(
 				tap(() => markDirty(this))

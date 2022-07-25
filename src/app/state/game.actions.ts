@@ -6,6 +6,7 @@ enum ActionTypes {
 	TICK = '[Game] Tick',
 	REFRESH_SCREEN = '[Game] Refresh screen',
 	GAME_OVER = '[Game] Game over',
+	ADD_SCORE = '[Game] Add score',
 
 	SPAWN_TETROMINO = '[Game] Spawn tetromino',
 	TETROMINO_SPAWNED = '[Game] Tetromino spawned',
@@ -37,6 +38,11 @@ export const gameOver = createAction(
 	ActionTypes.GAME_OVER
 );
 
+export const addScore = createAction(
+	ActionTypes.ADD_SCORE,
+	props<{ score: number; }>()
+);
+
 
 export const spawnTetromino = createAction(
 	ActionTypes.SPAWN_TETROMINO
@@ -58,7 +64,7 @@ export const eraseRows = createAction(
 
 export const rowsErased = createAction(
 	ActionTypes.ROWS_ERASED,
-	props<{ landed: number[][]; }>()
+	props<{ landed: number[][]; totalRows: number; }>()
 );
 
 export const rotateTetromino = createAction(
@@ -88,6 +94,7 @@ export const fromGame = {
 	tick,
 	refreshScreen,
 	gameOver,
+	addScore,
 
 	spawnTetromino,
 	tetrominoSpawned,

@@ -65,9 +65,13 @@ export class GameEffects {
 
 	onGameOver$ = createEffect(() => this.actions$.pipe(
 		ofType(fromGame.gameOver),
-		tap(() => {
+		concatLatestFrom(() => [
+			this.store.select(gameQueries.selectScore)
+		]),
+		map(args => args[1]),
+		tap(score => {
 			this.store.dispatch(fromGame.landTetromino());
-			alert('GAME OVER');
+			alert(`GAME OVER! You scored: ${score}`);
 		})
 	), { dispatch: false });
 
@@ -89,10 +93,17 @@ export class GameEffects {
 				]
 			});
 
-			return landed;
+			return { landed, totalRows: completedRows.length };
 		}),
-		switchMap(landed => [
-			fromGame.rowsErased({ landed })
+		switchMap(({ landed, totalRows }) => [
+			fromGame.rowsErased({ landed, totalRows })
+		])
+	));
+
+	onRowsErased$ = createEffect(() => this.actions$.pipe(
+		ofType(fromGame.rowsErased),
+		switchMap(({ landed, totalRows }) => [
+			fromGame.addScore({ score: totalRows * 100 })
 		])
 	));
 
@@ -211,6 +222,6 @@ export class GameEffects {
 	private getRandomNumber(start: number, end: number) {
 		const min = Math.ceil(start);
 		const max = Math.floor(end);
-		return Math.floor(Math.random() * (max - min) + min);
+		return 2 // Math.floor(Math.random() * (max - min) + min);
 	}
 }
