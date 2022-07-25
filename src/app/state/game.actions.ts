@@ -11,6 +11,8 @@ enum ActionTypes {
 	TETROMINO_SPAWNED = '[Game] Tetromino spawned',
 
 	LAND_TETROMINO = '[Game] Land tetromino',
+	ERASE_ROWS = '[Game] Erase rows',
+	ROWS_ERASED = '[Game] Rows erased',
 
 	ROTATE_TETROMINO = '[Game] Rotate tetromino',
 	MOVE_TETROMINO_DOWN = '[Game] Move tetromino down',
@@ -49,6 +51,16 @@ export const landTetromino = createAction(
 	ActionTypes.LAND_TETROMINO
 );
 
+export const eraseRows = createAction(
+	ActionTypes.ERASE_ROWS,
+	props<{ completedRows: number[]; }>()
+);
+
+export const rowsErased = createAction(
+	ActionTypes.ROWS_ERASED,
+	props<{ landed: number[][]; }>()
+);
+
 export const rotateTetromino = createAction(
 	ActionTypes.ROTATE_TETROMINO
 );
@@ -79,7 +91,11 @@ export const fromGame = {
 
 	spawnTetromino,
 	tetrominoSpawned,
+
 	landTetromino,
+	eraseRows,
+	rowsErased,
+
 	rotateTetromino,
 	moveTetrominoDown,
 	moveTetrominoLeft,

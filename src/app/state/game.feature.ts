@@ -61,6 +61,10 @@ export const gameFeature = createFeature({
 			})
 		),
 
+		on(fromGame.rowsErased, (state, { landed }) =>
+			assign(state, { landed })
+		),
+
 		on(fromGame.gameOver, (state, action) =>
 			assign(state, { ended: true })
 		)
@@ -81,11 +85,18 @@ const selectTetrominoHasLanded = createSelector(
 		|| wouldCollideWithMatrix(landed, tetromino)
 );
 
+const selectCompletedRows = createSelector(
+	selectLanded,
+	landed => landed.filter(row => row.every(col => !!col))
+		.map(row => landed.indexOf(row))
+);
+
 export const gameQueries = {
 	selectLanded,
 	selectScreen,
 	selectTetromino,
 	selectEnded,
 	selectTetrominoExists,
-	selectTetrominoHasLanded
+	selectTetrominoHasLanded,
+	selectCompletedRows
 };

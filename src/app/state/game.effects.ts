@@ -12,6 +12,13 @@ import { assign, wouldCollideWithMatrix, wouldCollideWithScreen } from '../helpe
 
 interface TetrominoMoveArgs { tetromino: Tetromino, landed: number[][] }
 
+interface GameTickArgs {
+	tetrominoExists: boolean,
+	tetrominoShouldLand: boolean,
+	completedRows: number[],
+	anyCompletedRows: boolean
+};
+
 @Injectable()
 export class GameEffects {
 	onStart$ = createEffect(() => this.actions$.pipe(
@@ -24,10 +31,19 @@ export class GameEffects {
 		)),
 		concatLatestFrom(() => [
 			this.store.select(gameQueries.selectTetrominoExists),
-			this.store.select(gameQueries.selectTetrominoHasLanded)
+			this.store.select(gameQueries.selectTetrominoHasLanded),
+			this.store.select(gameQueries.selectCompletedRows)
 		]),
-		tap(args => {
-			const [ startGameAction, tetrominoExists, tetrominoShouldLand ] = args;
+		map(args => {
+			const [ a, tetrominoExists, tetrominoShouldLand, completedRows ] = args;
+
+			return { tetrominoExists, tetrominoShouldLand, completedRows, anyCompletedRows: !!completedRows.length };
+		}),
+		tap(({ completedRows, anyCompletedRows }) => {
+			if (anyCompletedRows)
+				this.store.dispatch(fromGame.eraseRows({ completedRows }));
+		}),
+		tap(({ tetrominoExists, tetrominoShouldLand, completedRows }: GameTickArgs) => {
 			let action;
 
 			if (!tetrominoExists) {
@@ -41,8 +57,6 @@ export class GameEffects {
 			}
 
 			this.store.dispatch(action);
-
-			console.log(`TICK tetrominoExists: ${tetrominoExists}, tetrominoShouldLand: ${tetrominoShouldLand}`)
 		}),
 		concatMap(() => [
 			fromGame.refreshScreen()
@@ -56,6 +70,31 @@ export class GameEffects {
 			console.error('GAME OVER :(');
 		})
 	), { dispatch: false });
+
+	onEraseRows$ = createEffect(() => this.actions$.pipe(
+		ofType(fromGame.eraseRows),
+		concatLatestFrom(() => [
+			this.store.select(gameQueries.selectLanded)
+		]),
+		map(args => {
+			const [ action, landed ] = args;
+			return { landed: [ ...landed ], completedRows: action.completedRows };
+		}),
+		map(({ landed, completedRows }) => {
+			completedRows.forEach(index => {
+				landed.splice(index, 1);
+				landed = [
+					[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+					...landed
+				]
+			});
+
+			return landed;
+		}),
+		switchMap(landed => [
+			fromGame.rowsErased({ landed })
+		])
+	));
 
 	onRotateTetromino$ = createEffect(() => this.actions$.pipe(
 		ofType(fromGame.rotateTetromino),
@@ -172,6 +211,6 @@ export class GameEffects {
 	private getRandomNumber(start: number, end: number) {
 		const min = Math.ceil(start);
 		const max = Math.floor(end);
-		return 2 // Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+		return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
 	}
 }
