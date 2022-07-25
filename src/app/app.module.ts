@@ -7,12 +7,11 @@ import { AppComponent } from './app.component';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { environment } from '../environments/environment';
 import { gameFeature } from './state/game.feature';
-import { OldFashionedStageComponent } from './old-fashioned-stage.component';
 import { StageComponent } from './stage.component';
 import { GameEffects } from './state/game.effects';
 
 @NgModule({
-	declarations: [ AppComponent, OldFashionedStageComponent, StageComponent ],
+	declarations: [ AppComponent, StageComponent ],
 	imports: [
 		BrowserModule,
 		StoreModule.forRoot({ }),

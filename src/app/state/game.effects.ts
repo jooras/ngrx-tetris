@@ -211,6 +211,6 @@ export class GameEffects {
 	private getRandomNumber(start: number, end: number) {
 		const min = Math.ceil(start);
 		const max = Math.floor(end);
-		return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+		return Math.floor(Math.random() * (max - min) + min);
 	}
 }
