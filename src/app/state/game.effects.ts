@@ -67,7 +67,7 @@ export class GameEffects {
 		ofType(fromGame.gameOver),
 		tap(() => {
 			this.store.dispatch(fromGame.landTetromino());
-			console.error('GAME OVER :(');
+			alert('GAME OVER');
 		})
 	), { dispatch: false });
 
