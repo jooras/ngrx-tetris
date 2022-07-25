@@ -222,6 +222,6 @@ export class GameEffects {
 	private getRandomNumber(start: number, end: number) {
 		const min = Math.ceil(start);
 		const max = Math.floor(end);
-		return 2 // Math.floor(Math.random() * (max - min) + min);
+		return Math.floor(Math.random() * (max - min) + min);
 	}
 }
