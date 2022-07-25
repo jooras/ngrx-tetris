@@ -32,11 +32,11 @@ export class StageComponent implements OnInit {
 				break;
 			}
 			case 'ArrowLeft': {
-				// this._stage.moveTetromino(TetrominoMove.left);
+				this.store.dispatch(fromGame.moveTetrominoLeft());
 				break;
 			}
 			case 'ArrowRight': {
-				// this._stage.moveTetromino(TetrominoMove.right);
+				this.store.dispatch(fromGame.moveTetrominoRight());
 				break;
 			}
 		}
@@ -57,8 +57,9 @@ export class StageComponent implements OnInit {
 	}
 
 	private subscribeToState() {
-		this.screen$ = this.store.select(gameQueries.selectScreen).pipe(
-			tap(() => markDirty(this))
-		);
+		this.screen$ = this.store.select(gameQueries.selectScreen)
+			.pipe(
+				tap(() => markDirty(this))
+			);
 	}
 }

@@ -9,9 +9,13 @@ enum ActionTypes {
 
 	SPAWN_TETROMINO = '[Game] Spawn tetromino',
 	TETROMINO_SPAWNED = '[Game] Tetromino spawned',
+
 	LAND_TETROMINO = '[Game] Land tetromino',
+
 	ROTATE_TETROMINO = '[Game] Rotate tetromino',
 	MOVE_TETROMINO_DOWN = '[Game] Move tetromino down',
+	MOVE_TETROMINO_LEFT = '[Game] Move tetromino left',
+	MOVE_TETROMINO_RIGHT = '[Game] Move tetromino right',
 	TETROMINO_MOVED = '[Game] Tetromino moved'
 }
 
@@ -53,6 +57,14 @@ export const moveTetrominoDown = createAction(
 	ActionTypes.MOVE_TETROMINO_DOWN
 );
 
+export const moveTetrominoLeft = createAction(
+	ActionTypes.MOVE_TETROMINO_LEFT
+);
+
+export const moveTetrominoRight = createAction(
+	ActionTypes.MOVE_TETROMINO_RIGHT
+);
+
 export const tetrominoMoved = createAction(
 	ActionTypes.TETROMINO_MOVED,
 	props<{ tetromino: Tetromino; }>()
@@ -70,5 +82,7 @@ export const fromGame = {
 	landTetromino,
 	rotateTetromino,
 	moveTetrominoDown,
+	moveTetrominoLeft,
+	moveTetrominoRight,
 	tetrominoMoved
 };

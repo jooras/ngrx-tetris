@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Store } from '@ngrx/store';
+import { Action, Store } from '@ngrx/store';
 import { Actions, concatLatestFrom, createEffect, ofType } from '@ngrx/effects';
 import { concatMap, filter, flatMap, map, mergeMap, switchMap, take, takeUntil, tap } from 'rxjs/operators';
-import { interval } from 'rxjs';
+import { interval, Observable } from 'rxjs';
 
 import { fromGame, moveTetrominoDown, rotateTetromino } from './game.actions';
 import { gameQueries } from './game.feature';
@@ -10,14 +10,15 @@ import { allTetrominos, Tetromino } from '../models';
 import { assign, wouldCollideWithMatrix, wouldCollideWithScreen } from '../helpers';
 
 
+interface TetrominoMoveArgs { tetromino: Tetromino, landed: number[][] }
+
 @Injectable()
 export class GameEffects {
 	onStart$ = createEffect(() => this.actions$.pipe(
 		ofType(fromGame.start),
 		switchMap(() => interval(600).pipe(
-			// flatMap(() => null),
 			takeUntil(this.store.select(gameQueries.selectEnded).pipe(
-				filter(v => v),
+				filter(gameOver => gameOver),
 				take(1)
 			))
 		)),
@@ -26,17 +27,20 @@ export class GameEffects {
 			this.store.select(gameQueries.selectTetrominoHasLanded)
 		]),
 		tap(args => {
-			const [ action, tetrominoExists, tetrominoShouldLand ] = args;
+			const [ startGameAction, tetrominoExists, tetrominoShouldLand ] = args;
+			let action;
 
 			if (!tetrominoExists) {
-				this.store.dispatch(fromGame.spawnTetromino());
+				action = fromGame.spawnTetromino();
 			}
 			else if (tetrominoShouldLand) {
-				this.store.dispatch(fromGame.landTetromino());
+				action = fromGame.landTetromino();
 			}
 			else {
-				this.store.dispatch(fromGame.moveTetrominoDown());
+				action = fromGame.moveTetrominoDown();
 			}
+
+			this.store.dispatch(action);
 
 			console.log(`TICK tetrominoExists: ${tetrominoExists}, tetrominoShouldLand: ${tetrominoShouldLand}`)
 		}),
@@ -55,59 +59,51 @@ export class GameEffects {
 
 	onRotateTetromino$ = createEffect(() => this.actions$.pipe(
 		ofType(fromGame.rotateTetromino),
-		concatLatestFrom(() => [
-			this.store.select(gameQueries.selectTetromino),
-			this.store.select(gameQueries.selectLanded)
-		]),
-		map(args => {
-			const [ action, tetromino, landed ] = args;
-			return { tetromino, landed };
-		}),
+		this.concatTetrominoAndLandedMatrix(this.store),
 		filter(({ tetromino }) => !!tetromino),
-		map(({ tetromino, landed }) => {
-			const movedTetromino: Tetromino = assign(tetromino);
-			movedTetromino.shape = tetromino.shape[0].map((val, index) =>
-				tetromino.shape.map(row => row[index]).reverse())
+		map(({ tetromino, landed }: TetrominoMoveArgs) => {
+			tetromino.shape = tetromino.shape[0].map((val, index) =>
+				tetromino.shape.map(row => row[index]).reverse());
 
-			const cannotMove = wouldCollideWithScreen(landed, movedTetromino)
-				|| wouldCollideWithMatrix(landed, movedTetromino);
-
-			return { tetromino: movedTetromino, cannotMove };
+			return this.checkForCollisions(tetromino, landed, false);
 		}),
-		switchMap(({ tetromino, cannotMove }) => [
-			cannotMove
-				? fromGame.landTetromino()
-				: fromGame.tetrominoMoved({ tetromino }),
-			fromGame.refreshScreen()
-		])
+		switchMap(args => this.buildAfterMoveActions(args))
 	));
 
 	onMoveTetrominoDown$ = createEffect(() => this.actions$.pipe(
 		ofType(fromGame.moveTetrominoDown),
-		concatLatestFrom(() => [
-			this.store.select(gameQueries.selectTetromino),
-			this.store.select(gameQueries.selectLanded)
-		]),
-		map(args => {
-			const [ action, tetromino, landed ] = args;
-			return { tetromino, landed };
-		}),
+		this.concatTetrominoAndLandedMatrix(this.store),
 		filter(({ tetromino }) => !!tetromino),
-		map(({ tetromino, landed }) => {
-			const movedTetromino: Tetromino = assign(tetromino);
-			movedTetromino.topLeft.row += 1;
+		map(({ tetromino, landed }: TetrominoMoveArgs) => {
+			tetromino.topLeft.row += 1;
 
-			const cannotMove = wouldCollideWithScreen(landed, movedTetromino)
-				|| wouldCollideWithMatrix(landed, movedTetromino);
-
-			return { tetromino: movedTetromino, cannotMove };
+			return this.checkForCollisions(tetromino, landed, true);
 		}),
-		switchMap(({ tetromino, cannotMove }) => [
-			cannotMove
-				? fromGame.landTetromino()
-				: fromGame.tetrominoMoved({ tetromino }),
-			fromGame.refreshScreen()
-		])
+		switchMap(args => this.buildAfterMoveActions(args))
+	));
+
+	onMoveTetrominoLeft$ = createEffect(() => this.actions$.pipe(
+		ofType(fromGame.moveTetrominoLeft),
+		this.concatTetrominoAndLandedMatrix(this.store),
+		filter(({ tetromino }) => !!tetromino),
+		map(({ tetromino, landed }: TetrominoMoveArgs) => {
+			tetromino.topLeft.col -= 1;
+
+			return this.checkForCollisions(tetromino, landed, false);
+		}),
+		switchMap(args => this.buildAfterMoveActions(args))
+	));
+
+	onMoveTetrominoRight$ = createEffect(() => this.actions$.pipe(
+		ofType(fromGame.moveTetrominoRight),
+		this.concatTetrominoAndLandedMatrix(this.store),
+		filter(({ tetromino }) => !!tetromino),
+		map(({ tetromino, landed }: TetrominoMoveArgs) => {
+			tetromino.topLeft.col += 1;
+
+			return this.checkForCollisions(tetromino, landed, false);
+		}),
+		switchMap(args => this.buildAfterMoveActions(args))
 	));
 
 	onSpawnTetromino$ = createEffect(() => this.actions$.pipe(
@@ -115,10 +111,7 @@ export class GameEffects {
 		concatLatestFrom(() => [
 			this.store.select(gameQueries.selectLanded)
 		]),
-		map(args => {
-			const [ action, landed ] = args;
-			return landed;
-		}),
+		map(args => args[1]),
 		map(landed => {
 			const tetromino = new allTetrominos[this.getRandomNumber(0, 7)]();
 			const notEnoughSpace = wouldCollideWithScreen(landed, tetromino)
@@ -137,6 +130,44 @@ export class GameEffects {
 		private actions$: Actions,
 		private store: Store<any>
 	) { }
+
+	private concatTetrominoAndLandedMatrix(store) {
+		return (source$: Observable<any>) => source$.pipe(
+			concatLatestFrom(() => [
+				store.select(gameQueries.selectTetromino),
+				store.select(gameQueries.selectLanded)
+			]),
+			map(args => {
+				const [ action, tetromino, landed ] = args;
+				return {
+					tetromino: !tetromino ? null : assign(tetromino),
+					landed
+				};
+			}),
+		);
+	}
+
+	private checkForCollisions(tetromino: Tetromino, landed: number[][], shouldLand) {
+		const cannotMove = wouldCollideWithScreen(landed, tetromino)
+			|| wouldCollideWithMatrix(landed, tetromino);
+
+		return { tetromino, cannotMove, shouldLand }
+	}
+
+	private buildAfterMoveActions({ tetromino, cannotMove, shouldLand }) {
+		const actions: Action[] = [];
+
+		if (cannotMove && shouldLand) {
+			actions.push(fromGame.landTetromino());
+		}
+		else if (!cannotMove) {
+			actions.push(fromGame.tetrominoMoved({ tetromino }));
+		}
+
+		actions.push(fromGame.refreshScreen());
+
+		return actions;
+	}
 
 	private getRandomNumber(start: number, end: number) {
 		const min = Math.ceil(start);
