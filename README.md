@@ -1,6 +1,8 @@
 # Tetris
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.2.0.
+This is a sample tetris game created using the Angular and ngrx library. The game itself is simplified and should not be treated as a complete tetris implementation. Whole app was created as PoC project only.
+
+![alt app screenshot](./src/assets/tetris-app.jpg)
 
 ## Development server
 
