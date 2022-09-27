@@ -41,7 +41,7 @@ export class GameEffects {
 		}),
 		tap(({ completedRows, anyCompletedRows }) => {
 			if (anyCompletedRows)
-				this.store.dispatch(gameActions.eraseRows({ completedRows }));
+				this.store.dispatch(gameActions.eraseGivenRows({ rows: completedRows }));
 		}),
 		tap(({ tetrominoExists, tetrominoShouldLand, completedRows }: GameTickArgs) => {
 			let action;
@@ -76,13 +76,13 @@ export class GameEffects {
 	), { dispatch: false });
 
 	onEraseRows$ = createEffect(() => this.actions$.pipe(
-		ofType(gameActions.eraseRows),
+		ofType(gameActions.eraseGivenRows),
 		concatLatestFrom(() => [
 			this.store.select(fromGame.selectLanded)
 		]),
 		map(args => {
 			const [ action, landed ] = args;
-			return { landed: [ ...landed ], completedRows: action.completedRows };
+			return { landed: [ ...landed ], completedRows: action.rows };
 		}),
 		map(({ landed, completedRows }) => {
 			completedRows.forEach(index => {

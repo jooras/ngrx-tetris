@@ -3,7 +3,7 @@ import { Tetromino, TetrominoMove } from '../models';
 import { createActionTypeFactory } from '../helpers';
 
 
-const createActionType = createActionTypeFactory('[Game]');
+const createActionType = createActionTypeFactory('Game');
 
 const start = createAction(
 	createActionType('Start')
@@ -40,9 +40,9 @@ const landTetromino = createAction(
 	createActionType('Land tetromino')
 );
 
-const eraseRows = createAction(
+const eraseGivenRows = createAction(
 	createActionType('Erase rows'),
-	props<{ completedRows: number[]; }>()
+	props<{ rows: number[]; }>()
 );
 
 const rowsErased = createAction(
@@ -83,7 +83,7 @@ export const gameActions = {
 	tetrominoSpawned,
 
 	landTetromino,
-	eraseRows,
+	eraseGivenRows,
 	rowsErased,
 
 	rotateTetromino,
