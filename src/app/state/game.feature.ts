@@ -1,6 +1,6 @@
 import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
 import { allTetrominos, Tetromino } from '../models';
-import { fromGame } from './game.actions';
+import { gameActions } from './game.actions';
 import { assign, mergeToMatrix, wouldCollideWithMatrix, wouldCollideWithScreen } from '../helpers';
 
 
@@ -44,34 +44,34 @@ export const gameFeature = createFeature({
 	reducer: createReducer(
 		initialState,
 
-		on(fromGame.refreshScreen, (state, action) =>
+		on(gameActions.refreshScreen, (state, action) =>
 			assign(state, { screen: mergeToMatrix(state.landed, state.tetromino) })
 		),
 
-		on(fromGame.tetrominoSpawned, (state, { tetromino }) =>
+		on(gameActions.tetrominoSpawned, (state, { tetromino }) =>
 			assign(state, { tetromino })
 		),
 
-		on(fromGame.tetrominoMoved, (state, { tetromino }) =>
+		on(gameActions.tetrominoMoved, (state, { tetromino }) =>
 			assign(state, { tetromino })
 		),
 
-		on(fromGame.landTetromino, (state, action) =>
+		on(gameActions.landTetromino, (state, action) =>
 			assign(state, {
 				tetromino: null,
 				landed: mergeToMatrix(state.landed, state.tetromino)
 			})
 		),
 
-		on(fromGame.rowsErased, (state, { landed }) =>
+		on(gameActions.rowsErased, (state, { landed }) =>
 			assign(state, { landed })
 		),
 
-		on(fromGame.gameOver, (state, action) =>
+		on(gameActions.gameOver, (state, action) =>
 			assign(state, { ended: true })
 		),
 
-		on(fromGame.addScore, (state, { score }) =>
+		on(gameActions.addScore, (state, { score }) =>
 			assign(state, { score: state.score + score })
 		)
 	)
@@ -97,7 +97,7 @@ const selectCompletedRows = createSelector(
 		.map(row => landed.indexOf(row))
 );
 
-export const gameQueries = {
+export const fromGame = {
 	selectLanded,
 	selectScreen,
 	selectTetromino,

@@ -1,4 +1,6 @@
 import { Tetromino } from '../models';
+import { Store } from '@ngrx/store';
+import { TypedAction } from '@ngrx/store/src/models';
 
 export const assign = <TObj extends {}>(destination: TObj, overwriteWith?: Partial<TObj>) => {
 	if (!overwriteWith)
@@ -74,3 +76,16 @@ export const iterateOverTetromino = (tetromino: Tetromino, callback: ({ row, col
 			});
 		}
 }
+
+const registeredTypes: string[] = [];
+
+export const createActionTypeFactory = (namespace: string) => (type: string) => {
+	const actionType = `[${namespace}] ${type}`;
+
+	if (!!registeredTypes.some(t => t === actionType))
+		throw new Error(`Duplicated action type registered: ${actionType}`);
+
+	registeredTypes.push(actionType);
+
+	return actionType;
+};

@@ -4,8 +4,8 @@ import { Actions, concatLatestFrom, createEffect, ofType } from '@ngrx/effects';
 import { concatMap, filter, flatMap, map, mergeMap, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { interval, Observable } from 'rxjs';
 
-import { fromGame, moveTetrominoDown, rotateTetromino } from './game.actions';
-import { gameQueries } from './game.feature';
+import { gameActions } from './game.actions';
+import { fromGame } from './game.feature';
 import { allTetrominos, Tetromino } from '../models';
 import { assign, wouldCollideWithMatrix, wouldCollideWithScreen } from '../helpers';
 
@@ -22,17 +22,17 @@ interface GameTickArgs {
 @Injectable()
 export class GameEffects {
 	onStart$ = createEffect(() => this.actions$.pipe(
-		ofType(fromGame.start),
+		ofType(gameActions.start),
 		switchMap(() => interval(600).pipe(
-			takeUntil(this.store.select(gameQueries.selectEnded).pipe(
+			takeUntil(this.store.select(fromGame.selectEnded).pipe(
 				filter(gameOver => gameOver),
 				take(1)
 			))
 		)),
 		concatLatestFrom(() => [
-			this.store.select(gameQueries.selectTetrominoExists),
-			this.store.select(gameQueries.selectTetrominoHasLanded),
-			this.store.select(gameQueries.selectCompletedRows)
+			this.store.select(fromGame.selectTetrominoExists),
+			this.store.select(fromGame.selectTetrominoHasLanded),
+			this.store.select(fromGame.selectCompletedRows)
 		]),
 		map(args => {
 			const [ a, tetrominoExists, tetrominoShouldLand, completedRows ] = args;
@@ -41,44 +41,44 @@ export class GameEffects {
 		}),
 		tap(({ completedRows, anyCompletedRows }) => {
 			if (anyCompletedRows)
-				this.store.dispatch(fromGame.eraseRows({ completedRows }));
+				this.store.dispatch(gameActions.eraseRows({ completedRows }));
 		}),
 		tap(({ tetrominoExists, tetrominoShouldLand, completedRows }: GameTickArgs) => {
 			let action;
 
 			if (!tetrominoExists) {
-				action = fromGame.spawnTetromino();
+				action = gameActions.spawnTetromino();
 			}
 			else if (tetrominoShouldLand) {
-				action = fromGame.landTetromino();
+				action = gameActions.landTetromino();
 			}
 			else {
-				action = fromGame.moveTetrominoDown();
+				action = gameActions.moveTetrominoDown();
 			}
 
 			this.store.dispatch(action);
 		}),
 		concatMap(() => [
-			fromGame.refreshScreen()
+			gameActions.refreshScreen()
 		])
 	));
 
 	onGameOver$ = createEffect(() => this.actions$.pipe(
-		ofType(fromGame.gameOver),
+		ofType(gameActions.gameOver),
 		concatLatestFrom(() => [
-			this.store.select(gameQueries.selectScore)
+			this.store.select(fromGame.selectScore)
 		]),
 		map(args => args[1]),
 		tap(score => {
-			this.store.dispatch(fromGame.landTetromino());
+			this.store.dispatch(gameActions.landTetromino());
 			alert(`GAME OVER! You scored: ${score}`);
 		})
 	), { dispatch: false });
 
 	onEraseRows$ = createEffect(() => this.actions$.pipe(
-		ofType(fromGame.eraseRows),
+		ofType(gameActions.eraseRows),
 		concatLatestFrom(() => [
-			this.store.select(gameQueries.selectLanded)
+			this.store.select(fromGame.selectLanded)
 		]),
 		map(args => {
 			const [ action, landed ] = args;
@@ -96,19 +96,19 @@ export class GameEffects {
 			return { landed, totalRows: completedRows.length };
 		}),
 		switchMap(({ landed, totalRows }) => [
-			fromGame.rowsErased({ landed, totalRows })
+			gameActions.rowsErased({ landed, totalRows })
 		])
 	));
 
 	onRowsErased$ = createEffect(() => this.actions$.pipe(
-		ofType(fromGame.rowsErased),
+		ofType(gameActions.rowsErased),
 		switchMap(({ landed, totalRows }) => [
-			fromGame.addScore({ score: totalRows * 100 })
+			gameActions.addScore({ score: totalRows * 100 })
 		])
 	));
 
 	onRotateTetromino$ = createEffect(() => this.actions$.pipe(
-		ofType(fromGame.rotateTetromino),
+		ofType(gameActions.rotateTetromino),
 		this.concatTetrominoAndLandedMatrix(this.store),
 		filter(({ tetromino }) => !!tetromino),
 		map(({ tetromino, landed }: TetrominoMoveArgs) => {
@@ -121,7 +121,7 @@ export class GameEffects {
 	));
 
 	onMoveTetrominoDown$ = createEffect(() => this.actions$.pipe(
-		ofType(fromGame.moveTetrominoDown),
+		ofType(gameActions.moveTetrominoDown),
 		this.concatTetrominoAndLandedMatrix(this.store),
 		filter(({ tetromino }) => !!tetromino),
 		map(({ tetromino, landed }: TetrominoMoveArgs) => {
@@ -133,7 +133,7 @@ export class GameEffects {
 	));
 
 	onMoveTetrominoLeft$ = createEffect(() => this.actions$.pipe(
-		ofType(fromGame.moveTetrominoLeft),
+		ofType(gameActions.moveTetrominoLeft),
 		this.concatTetrominoAndLandedMatrix(this.store),
 		filter(({ tetromino }) => !!tetromino),
 		map(({ tetromino, landed }: TetrominoMoveArgs) => {
@@ -145,7 +145,7 @@ export class GameEffects {
 	));
 
 	onMoveTetrominoRight$ = createEffect(() => this.actions$.pipe(
-		ofType(fromGame.moveTetrominoRight),
+		ofType(gameActions.moveTetrominoRight),
 		this.concatTetrominoAndLandedMatrix(this.store),
 		filter(({ tetromino }) => !!tetromino),
 		map(({ tetromino, landed }: TetrominoMoveArgs) => {
@@ -157,9 +157,9 @@ export class GameEffects {
 	));
 
 	onSpawnTetromino$ = createEffect(() => this.actions$.pipe(
-		ofType(fromGame.spawnTetromino),
+		ofType(gameActions.spawnTetromino),
 		concatLatestFrom(() => [
-			this.store.select(gameQueries.selectLanded)
+			this.store.select(fromGame.selectLanded)
 		]),
 		map(args => args[1]),
 		map(landed => {
@@ -171,8 +171,8 @@ export class GameEffects {
 		}),
 		switchMap(({ tetromino, notEnoughSpace }) => [
 			notEnoughSpace
-				? fromGame.gameOver()
-				: fromGame.tetrominoSpawned({ tetromino })
+				? gameActions.gameOver()
+				: gameActions.tetrominoSpawned({ tetromino })
 		])
 	));
 
@@ -184,8 +184,8 @@ export class GameEffects {
 	private concatTetrominoAndLandedMatrix(store) {
 		return (source$: Observable<any>) => source$.pipe(
 			concatLatestFrom(() => [
-				store.select(gameQueries.selectTetromino),
-				store.select(gameQueries.selectLanded)
+				store.select(fromGame.selectTetromino),
+				store.select(fromGame.selectLanded)
 			]),
 			map(args => {
 				const [ action, tetromino, landed ] = args;
@@ -208,13 +208,13 @@ export class GameEffects {
 		const actions: Action[] = [];
 
 		if (cannotMove && shouldLand) {
-			actions.push(fromGame.landTetromino());
+			actions.push(gameActions.landTetromino());
 		}
 		else if (!cannotMove) {
-			actions.push(fromGame.tetrominoMoved({ tetromino }));
+			actions.push(gameActions.tetrominoMoved({ tetromino }));
 		}
 
-		actions.push(fromGame.refreshScreen());
+		actions.push(gameActions.refreshScreen());
 
 		return actions;
 	}

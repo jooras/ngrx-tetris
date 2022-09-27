@@ -1,95 +1,78 @@
 import { createAction, props } from '@ngrx/store';
 import { Tetromino, TetrominoMove } from '../models';
+import { createActionTypeFactory } from '../helpers';
 
-enum ActionTypes {
-	START = '[Game] Start',
-	TICK = '[Game] Tick',
-	REFRESH_SCREEN = '[Game] Refresh screen',
-	GAME_OVER = '[Game] Game over',
-	ADD_SCORE = '[Game] Add score',
 
-	SPAWN_TETROMINO = '[Game] Spawn tetromino',
-	TETROMINO_SPAWNED = '[Game] Tetromino spawned',
+const createActionType = createActionTypeFactory('[Game]');
 
-	LAND_TETROMINO = '[Game] Land tetromino',
-	ERASE_ROWS = '[Game] Erase rows',
-	ROWS_ERASED = '[Game] Rows erased',
-
-	ROTATE_TETROMINO = '[Game] Rotate tetromino',
-	MOVE_TETROMINO_DOWN = '[Game] Move tetromino down',
-	MOVE_TETROMINO_LEFT = '[Game] Move tetromino left',
-	MOVE_TETROMINO_RIGHT = '[Game] Move tetromino right',
-	TETROMINO_MOVED = '[Game] Tetromino moved'
-}
-
-export const start = createAction(
-	ActionTypes.START
+const start = createAction(
+	createActionType('Start')
 );
 
-export const tick = createAction(
-	ActionTypes.TICK
+const tick = createAction(
+	createActionType('Tick')
 );
 
-export const refreshScreen = createAction(
-	ActionTypes.REFRESH_SCREEN
+const refreshScreen = createAction(
+	createActionType('Refresh screen')
 );
 
-export const gameOver = createAction(
-	ActionTypes.GAME_OVER
+const gameOver = createAction(
+	createActionType('Game over')
 );
 
-export const addScore = createAction(
-	ActionTypes.ADD_SCORE,
+const addScore = createAction(
+	createActionType('Add score'),
 	props<{ score: number; }>()
 );
 
 
-export const spawnTetromino = createAction(
-	ActionTypes.SPAWN_TETROMINO
+const spawnTetromino = createAction(
+	createActionType('Spawn tetromino')
 );
 
-export const tetrominoSpawned = createAction(
-	ActionTypes.TETROMINO_SPAWNED,
+const tetrominoSpawned = createAction(
+	createActionType('Tetromino spawned'),
 	props<{ tetromino: Tetromino; }>()
 );
 
-export const landTetromino = createAction(
-	ActionTypes.LAND_TETROMINO
+const landTetromino = createAction(
+	createActionType('Land tetromino')
 );
 
-export const eraseRows = createAction(
-	ActionTypes.ERASE_ROWS,
+const eraseRows = createAction(
+	createActionType('Erase rows'),
 	props<{ completedRows: number[]; }>()
 );
 
-export const rowsErased = createAction(
-	ActionTypes.ROWS_ERASED,
+const rowsErased = createAction(
+	createActionType('Rows erased'),
 	props<{ landed: number[][]; totalRows: number; }>()
 );
 
-export const rotateTetromino = createAction(
-	ActionTypes.ROTATE_TETROMINO
+const rotateTetromino = createAction(
+	createActionType('Rotate tetromino')
 );
 
-export const moveTetrominoDown = createAction(
-	ActionTypes.MOVE_TETROMINO_DOWN
+const moveTetrominoDown = createAction(
+	createActionType('Move tetromino down')
 );
 
-export const moveTetrominoLeft = createAction(
-	ActionTypes.MOVE_TETROMINO_LEFT
+const moveTetrominoLeft = createAction(
+	createActionType('Move tetromino left')
 );
 
-export const moveTetrominoRight = createAction(
-	ActionTypes.MOVE_TETROMINO_RIGHT
+const moveTetrominoRight = createAction(
+	createActionType('Move tetromino right')
 );
 
-export const tetrominoMoved = createAction(
-	ActionTypes.TETROMINO_MOVED,
+const tetrominoMoved = createAction(
+	createActionType('Tetromino moved'),
 	props<{ tetromino: Tetromino; }>()
 );
 
 
-export const fromGame = {
+export const gameActions = {
 	start,
 	tick,
 	refreshScreen,
