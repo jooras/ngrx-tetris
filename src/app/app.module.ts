@@ -9,6 +9,8 @@ import { environment } from '../environments/environment';
 import { gameFeature } from './state/game.feature';
 import { StageComponent } from './stage.component';
 import { GameEffects } from './state/game.effects';
+import { tetrominoFeature } from './state/tetromino.feature';
+import { TetrominoEffects } from './state/tetromino.effects';
 
 @NgModule({
 	declarations: [ AppComponent, StageComponent ],
@@ -16,7 +18,8 @@ import { GameEffects } from './state/game.effects';
 		BrowserModule,
 		StoreModule.forRoot({ }),
 		StoreModule.forFeature(gameFeature),
-		EffectsModule.forRoot([ GameEffects ]),
+		StoreModule.forFeature(tetrominoFeature),
+		EffectsModule.forRoot([ GameEffects, TetrominoEffects ]),
 		StoreDevtoolsModule.instrument({
 			maxAge: 25,
 			logOnly: environment.production

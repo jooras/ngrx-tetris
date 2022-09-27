@@ -2,6 +2,7 @@ import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
 import { allTetrominos, Tetromino } from '../models';
 import { gameActions } from './game.actions';
 import { assign, mergeToMatrix, wouldCollideWithMatrix, wouldCollideWithScreen } from '../helpers';
+import { fromTetromino } from './tetromino.feature';
 
 
 const emptyMatrix = [
@@ -26,7 +27,6 @@ const emptyMatrix = [
 export interface GameState {
 	landed: number[][];
 	screen: number[][];
-	tetromino: Tetromino;
 	ended: boolean;
 	score: number;
 }
@@ -34,7 +34,6 @@ export interface GameState {
 const initialState: GameState = {
 	landed: emptyMatrix,
 	screen: emptyMatrix,
-	tetromino: null,
 	ended: false,
 	score: 0
 };
@@ -44,22 +43,13 @@ export const gameFeature = createFeature({
 	reducer: createReducer(
 		initialState,
 
-		on(gameActions.refreshScreen, (state, action) =>
-			assign(state, { screen: mergeToMatrix(state.landed, state.tetromino) })
+		on(gameActions.renderScreen, (state, { tetromino }) =>
+			assign(state, { screen: mergeToMatrix(state.landed, tetromino) })
 		),
 
-		on(gameActions.tetrominoSpawned, (state, { tetromino }) =>
-			assign(state, { tetromino })
-		),
-
-		on(gameActions.tetrominoMoved, (state, { tetromino }) =>
-			assign(state, { tetromino })
-		),
-
-		on(gameActions.landTetromino, (state, action) =>
+		on(gameActions.mergeTetromino, (state, { tetromino }) =>
 			assign(state, {
-				tetromino: null,
-				landed: mergeToMatrix(state.landed, state.tetromino)
+				landed: mergeToMatrix(state.landed, tetromino)
 			})
 		),
 
@@ -77,16 +67,11 @@ export const gameFeature = createFeature({
 	)
 });
 
-const { selectLanded, selectScreen, selectTetromino, selectEnded, selectScore } = gameFeature;
-
-const selectTetrominoExists = createSelector(
-	selectTetromino,
-	tetromino => !!tetromino
-);
+const { selectLanded, selectScreen, selectEnded, selectScore } = gameFeature;
 
 const selectTetrominoHasLanded = createSelector(
 	selectLanded,
-	selectTetromino,
+	fromTetromino.selectTetromino,
 	(landed, tetromino) => wouldCollideWithScreen(landed, tetromino)
 		|| wouldCollideWithMatrix(landed, tetromino)
 );
@@ -100,10 +85,8 @@ const selectCompletedRows = createSelector(
 export const fromGame = {
 	selectLanded,
 	selectScreen,
-	selectTetromino,
 	selectEnded,
 	selectScore,
-	selectTetrominoExists,
 	selectTetrominoHasLanded,
 	selectCompletedRows
 };

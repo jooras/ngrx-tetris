@@ -13,8 +13,9 @@ const tick = createAction(
 	createActionType('Tick')
 );
 
-const refreshScreen = createAction(
-	createActionType('Refresh screen')
+const renderScreen = createAction(
+	createActionType('Render screen'),
+	props<{ tetromino: Tetromino; }>()
 );
 
 const gameOver = createAction(
@@ -27,17 +28,11 @@ const addScore = createAction(
 );
 
 
-const spawnTetromino = createAction(
-	createActionType('Spawn tetromino')
-);
 
-const tetrominoSpawned = createAction(
-	createActionType('Tetromino spawned'),
+
+const mergeTetromino = createAction(
+	createActionType('Merge tetromino'),
 	props<{ tetromino: Tetromino; }>()
-);
-
-const landTetromino = createAction(
-	createActionType('Land tetromino')
 );
 
 const eraseGivenRows = createAction(
@@ -50,45 +45,17 @@ const rowsErased = createAction(
 	props<{ landed: number[][]; totalRows: number; }>()
 );
 
-const rotateTetromino = createAction(
-	createActionType('Rotate tetromino')
-);
 
-const moveTetrominoDown = createAction(
-	createActionType('Move tetromino down')
-);
-
-const moveTetrominoLeft = createAction(
-	createActionType('Move tetromino left')
-);
-
-const moveTetrominoRight = createAction(
-	createActionType('Move tetromino right')
-);
-
-const tetrominoMoved = createAction(
-	createActionType('Tetromino moved'),
-	props<{ tetromino: Tetromino; }>()
-);
 
 
 export const gameActions = {
 	start,
 	tick,
-	refreshScreen,
+	renderScreen,
 	gameOver,
 	addScore,
 
-	spawnTetromino,
-	tetrominoSpawned,
-
-	landTetromino,
+	mergeTetromino,
 	eraseGivenRows,
-	rowsErased,
-
-	rotateTetromino,
-	moveTetrominoDown,
-	moveTetrominoLeft,
-	moveTetrominoRight,
-	tetrominoMoved
+	rowsErased
 };
